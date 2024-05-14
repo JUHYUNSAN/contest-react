@@ -19,3 +19,14 @@ export const ImgBox = styled.img`
     width:300px;
     height:300px;
 `
+
+
+export const Game = styled.div`
+    font-size:35px;
+    font-weight:bold;
+`
+
+export const Round = styled.div`
+    font-size:35px;
+    font-weight:bold;
+`

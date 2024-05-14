@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {GameContainer, ImgContainer, ImgBox} from "./styled";
+import {GameContainer, ImgContainer, ImgBox, Round, Game} from "./styled";
 
 import p0 from "../../assets/movieImages/avengers.jpg";
 import p1 from "../../assets/movieImages/batman.jpg";
@@ -72,35 +72,71 @@ const candidate = [
   ];
   
 
-export const Main = () => {
-    const [candy, setCandy] = useState([candidate])
+  export const Main = () => {
+    const [candy, setCandy] = useState(candidate);
     const [winCandy, setWinCandy] = useState([]);
     const [round, setRound] = useState(1);
+    const [game, setGame] = useState(candidate?.length);
 
     useEffect(() => {
         setCandy(
             candidate
                 .map((c) => {
-                    return { ...candy, order: Math.random() };
+                    return { key: c.key, name: c.name, src: c.src, order: Math.random() };
                 })
                 .sort((l, r) => {
                     return l.order - r.order;
                 })
         );
-    }, [candy])
+    }, [])
+
+    const handleClick = (e) => {
+
+        setCandy((prev) => {
+            const temp = prev.splice(0, 2)
+            return prev.filter((el, i) => el.key !== temp.key)
+        })
+        setRound((prev) => prev + 1);
+        setWinCandy((prev) => [...prev, e])
+    }
+
+    useEffect(() => {
+        if (game === 1) {
+            return;
+        }
+        if (candy.length === 0) {
+            setRound(1);
+            setWinCandy([]);
+            setCandy(winCandy);
+            setGame((prev) => prev / 2)
+        }
+    }, [round])
 
 
-    return(
-        <GameContainer>
-            {candidate.map((e,i) => {
-                if(i > 1) return;
-                return (
-                    <ImgContainer>
-                        <ImgBox src={e.src} />
-                        {e.name}
-                    </ImgContainer>
-                )
-            })}
-        </GameContainer>
+
+
+    return (
+        <>
+            {
+                game === 1 ? <Game>Win!</Game> :
+                    game === 2 ? <Game>決勝</Game> : <Game>{game}{"강"}</Game>
+            }
+            {game > 2 &&
+                <Round>{round}{"Round"}</Round>
+            }
+            <GameContainer>
+                {candy.map((e, i) => {
+                    if (i > 1) return;
+                    return (
+                        <ImgContainer key={e.key} onClick={() => handleClick(e)}>
+                            <ImgBox 
+                            src={e.src} />
+                            {e.name}
+                        </ImgContainer>
+                    )
+                })}
+            </GameContainer>
+        </>
     )
+
 }
