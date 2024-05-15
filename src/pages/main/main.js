@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {GameContainer, ImgContainer, ImgBox, Round, Game} from "./styled";
+
+import { UserContext } from "../../App";
+import { RankingContext } from "../../App";
+import { useNavigate } from "react-router-dom";
 
 import p0 from "../../assets/movieImages/avengers.jpg";
 import p1 from "../../assets/movieImages/batman.jpg";
@@ -70,7 +74,6 @@ const candidate = [
     { key: 30, name: "UP", src: p30 },
     { key: 31, name: "World war Z", src: p31 }
   ];
-  
 
   export const Main = () => {
     const [candy, setCandy] = useState(candidate);
@@ -78,7 +81,10 @@ const candidate = [
     const [round, setRound] = useState(1);
     const [game, setGame] = useState(candidate?.length);
 
-    useEffect(() => {
+    const {value, setValue} = useContext(RankingContext);
+    const navigate = useNavigate();
+
+    useEffect(() => { // 배열 순서를 바꿀 필요는 없으니까 한번만 실행해도 됨.
         setCandy(
             candidate
                 .map((c) => {
@@ -93,31 +99,52 @@ const candidate = [
     const handleClick = (e) => {
 
         setCandy((prev) => {
-            const temp = prev.splice(0, 2)
-            return prev.filter((el, i) => el.key !== temp.key)
+            const temp = prev.splice(0, 2) //0,1번을 반환함
+            return prev.filter((el, i) => el.key !== temp.key) //2개가 빠짐
         })
         setRound((prev) => prev + 1);
-        setWinCandy((prev) => [...prev, e])
+        setWinCandy((prev) => [...prev, e]) //앞으로 이긴애들이 들어가기위해 e
+    }
+
+    const rank = () => {
+        if (value.length > 0) {
+            setValue((prev) => {
+                const temp = prev.map((e, i) =>
+                    candy[0].key === e.key ?
+                        { key: e.key, name: e.name, src: e.src, score: e.score + 1 }
+                        : { key: e.key, name: e.name, src: e.src, score: e.score }
+                )
+                return temp;
+            })
+            console.log(value);
+        } else {
+            const temp = candidate.map((e, i) =>
+                candy[0].key === e.key ?
+                    { key: e.key, name: e.name, src: e.src, score: 1 }
+                    : { key: e.key, name: e.name, src: e.src, score: 0 }
+            )
+            setValue(temp)
+            console.log(value);
+        }
+        navigate("/ranking");
     }
 
     useEffect(() => {
         if (game === 1) {
+            rank();
             return;
         }
         if (candy.length === 0) {
             setRound(1);
-            setWinCandy([]);
             setCandy(winCandy);
+            setWinCandy([]);
             setGame((prev) => prev / 2)
         }
     }, [round])
 
-
-
-
     return (
         <>
-            {
+            { //if보다 삼항연산자 써야함
                 game === 1 ? <Game>Win!</Game> :
                     game === 2 ? <Game>決勝</Game> : <Game>{game}{"강"}</Game>
             }
@@ -128,7 +155,8 @@ const candidate = [
                 {candy.map((e, i) => {
                     if (i > 1) return;
                     return (
-                        <ImgContainer key={e.key} onClick={() => handleClick(e)}>
+                        <ImgContainer key={e.key} onClick={() => handleClick(e)}> 
+                        {/* 이긴애가 파라미터로 들어감 */}
                             <ImgBox 
                             src={e.src} />
                             {e.name}
